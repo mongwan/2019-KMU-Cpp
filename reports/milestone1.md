@@ -38,3 +38,47 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
     }
 
 ![image1-3](image1-3.png)
+
+- 헤더파일은 ncurses.h를 불러온다.
+- initscr() -> initiate screen
+- printw(const *chr)은 0, 0 위치에 글자를 출력한다(고 선언한다).
+- refresh를 통해 위에 선언되었던 명령들을 실제로 실행한다.
+- getch() -> get Character. 명령 없이 창이 닫히지 않도록 실행 
+- endwin() -> end Window
+
+### 유니코드 및 색상 설정
+
+    #include <ncurses.h>
+    #include <clocale>
+    int main() {
+        setlocale(LC_ALL, "");
+
+        initscr();
+        start_color();
+        init_pair(1, COLOR_BLUE, COLOR_YELLOW);
+        init_pair(2, COLOR_RED, COLOR_GREEN);
+
+        bkgd(COLOR_PAIR(1));
+        attron(COLOR_PAIR(1));
+        mvprintw(1, 1, "C++ programming");
+        mvprintw(2, 1, "Computer Science @ Kookmin Univ.");
+        attroff(COLOR_PAIR(1));
+
+        attron(COLOR_PAIR(2));
+        border('|', '|', '-', '-', '*', '*', '*', '*');
+        attroff(COLOR_PAIR(2));
+
+        refresh();
+        getch();
+        endwin();
+
+        return 0;
+    }
+
+![imaege1-4](image1-4.png)
+
+- start_color()은 color 설정 전에 실행되어야 한다.
+- init_pair(n, font-color, background-color) : 글자 색상과 배경 색상 순으로 n번 색상 Pair을 정의한다. 
+- bkgd -> background, 인자가 문자일때는 그 문자로 배경 설정
+- attron -> attribute on / attroff -> attribute off 두 명령 사이의 명령들에 색상 속성을 적용
+- border : 좌우상하 좌상단 우상단 좌하단 우하단 순으로 화면의 테두리 설정
