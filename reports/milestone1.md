@@ -82,3 +82,81 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
 - bkgd -> background, 인자가 문자일때는 그 문자로 배경 설정
 - attron -> attribute on / attroff -> attribute off 두 명령 사이의 명령들에 색상 속성을 적용
 - border : 좌우상하 좌상단 우상단 좌하단 우하단 순으로 화면의 테두리 설정
+
+### 사용자 입력받기
+
+    #include <ncurses.h>
+    #include <clocale>
+
+    int main() {
+        setlocale(LC_ALL, "");
+        char userName[8];
+
+        initscr();
+
+        keypad(stdscr, TRUE);
+        curs_set(0);
+        noecho();
+
+        printw("User name: ");
+        scanw("%s", userName);
+
+        printw("%s\n", userName);
+        printw("Screen will be cleared if you push any key");
+        refresh();
+
+        getch();
+        clear();
+        refresh();
+
+        getch();
+        endwin();
+        return 0;
+    }
+
+![image1-5](image1-5.png)
+
+- keypad(*win, bool) : 키보드 특수 키 입력을 가능하게 설정해준다. 첫 인자로 윈도우 포인터를, 두번째 인자로 사용 가능, 불가능을 bool로 받는다.
+- curs_set(int visibility) 커서 설정, 0은 안보임, 1은 작은 커서, 2는 큰 커서이나 나의 환경에서는 1과 2의 차이가 없었다.
+- noecho() 입력한 문자를 표시하지 않는다.
+- scanw(const char *fmt) scanf와 유사
+
+### 윈도우 관리
+
+    #include <ncurses.h>
+    #include <clocale>
+
+    int main() {
+        setlocale(LC_ALL, "");
+
+        WINDOW *win1;
+
+        initscr();
+        resize_term(25, 25);
+        start_color();
+        init_pair(1, COLOR_WHITE, COLOR_RED);
+
+        border('*','*','*','*','*','*','*','*');
+        mvprintw(1, 1, "A default window");
+        refresh();
+        getch();
+
+        win1 = newwin(20, 20, 3, 3);
+        wbkgd(win1, COLOR_PAIR(1));
+        wattron(win1, COLOR_PAIR(1));
+        mvwprintw(win1, 1, 1, "A new window");
+        wborder(win1, '@', '@', '@', '@', '@', '@', '@', '@');
+        wrefresh(win1);
+
+        getch();
+        delwin(win1);
+        endwin();
+
+        return 0;
+    }
+
+- 함수 내에 'w'가 들어있는 "wbkgd", "wattron" 등은 첫 인자로 윈도우 포인터를 받고 나머지는 bkgd, attron 처럼 w를 제외한 함수와 같다.
+- newwin(lines, cols, y, x) : 윈도우 크기와 위치를 지정해서 윈도우를 표시한다.
+
+## 1단계 개발설계
+2차원 배열을 선언하고, 그 배열 크기의 window를 만든다. 배열의 각 값을 통해 ncurses의 내장 함수를 사용해서 화면을 표시한다.
