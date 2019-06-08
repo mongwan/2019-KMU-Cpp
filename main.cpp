@@ -6,6 +6,9 @@ enum {P_DEFAULT = 1, P_WALL, P_BOX, P_GOAL, P_OUTSIDE};
 
 int main() {
     setlocale(LC_ALL, ""); // to use unicode
+    keypad(stdscr, TRUE);
+    curs_set(0);
+    noecho();
 
     int arr1[9][7] = {
             {1, 1, 1, 1, 4, 4, 4},
