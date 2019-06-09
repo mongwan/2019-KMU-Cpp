@@ -12,21 +12,21 @@ struct Pos { int y; int x; Direction heading; };
 Pos chk_pos(Direction dir, Pos curr);
 void refr_game(WINDOW* w, Pos curr);
 void refr_info(WINDOW* w);
+int** get_arr(int n);
 
+int* stagep[STAGEN] =
+        {(int*)stage1, (int*)stage2, (int*)stage3, (int*)stage4, (int*)stage5};
 int heights[STAGEN] = {7, 9, 6, 7, 8};
 int widths[STAGEN] = {6, 7, 8, 7, 10};
 
-int arr1_height = 9;
-int arr1_width = 7;
-
-int curr_arr[9][7];
-
 int step = 0;
 int push = 0;
-int level = 1;
-bool cleared = false;
+int stage = 0;
+
+int** curr_arr;
+
 int main() {
-    memcpy(curr_arr, stage2, sizeof(stage2));
+    curr_arr = get_arr(0);
 
     setlocale(LC_ALL, ""); // to use unicode
 
@@ -53,7 +53,7 @@ int main() {
     mvprintw(1, 26, "Q to Exit"); // length = 9
     refresh();
 
-    game_win = newwin(arr1_height, arr1_width*2, 3, 3);
+    game_win = newwin(heights[stage], widths[stage]*2, 3, 3);
     wbkgd(game_win, COLOR_PAIR(DEFAULT));
     refr_game(game_win, curr);
 
@@ -68,6 +68,7 @@ int main() {
 
     int chr = 0;
     Pos chk = curr;
+    bool cleared = false;
     while (chr != 'q' && chr != 'Q') {
         chr = getch();
 
@@ -75,7 +76,6 @@ int main() {
         else if (chr == KEY_RIGHT) chk = chk_pos(RIGHT, curr);
         else if (chr == KEY_UP) chk = chk_pos(UP, curr);
         else if (chr == KEY_DOWN) chk = chk_pos(DOWN, curr);
-        else continue;
 
         int chk_num = curr_arr[chk.y][chk.x];
 
@@ -99,6 +99,7 @@ int main() {
                 curr.x = chk.x;
                 refr_game(game_win, curr);
                 step += 1;
+                push += 1;
                 refr_info(info_win);
             }
         }
@@ -112,6 +113,15 @@ int main() {
     endwin();
 
     return 0;
+}
+
+int** get_arr(int n) {
+    int** arr = new int*[heights[n]];
+    for(int i = 0; i < heights[n]; ++i)
+        arr[i] = new int[widths[n]];
+
+    memcpy(arr, stagep[n], sizeof(*stagep[n]));
+    return arr;
 }
 
 Pos chk_pos(Direction dir, Pos curr) {
@@ -143,8 +153,8 @@ Pos chk_pos(Direction dir, Pos curr) {
 }
 
 void refr_game(WINDOW *w, Pos curr) {
-    for(int y=0; y < arr1_height; y++) {
-        for(int x=0; x < arr1_width*2; x++) {
+    for(int y=0; y < heights[stage]; y++) {
+        for(int x=0; x < widths[stage]*2; x++) {
             int n = curr_arr[y][x];
             wattron(w, COLOR_PAIR(n+1));
             char *c = new char;
@@ -171,7 +181,7 @@ void refr_info(WINDOW *w) {
     mvwprintw(w, 0, 7, c);
     sprintf(c, "%d", push);
     mvwprintw(w, 1, 7, c);
-    sprintf(c, "%d", level);
+    sprintf(c, "%d", stage+1);
     mvwprintw(w, 2, 6, c);
     delete c;
     wrefresh(w);
