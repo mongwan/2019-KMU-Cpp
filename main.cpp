@@ -15,6 +15,7 @@ struct Pos {
 
 Pos chk_pos(Direction dir, Pos curr);
 void refr_game(WINDOW* w, Pos curr);
+void refr_info(WINDOW* w);
 
 int origin_arr1[9][7] = {
         {1, 1, 1, 1, 4, 4, 4},
@@ -34,6 +35,10 @@ int arr1_width = 7;
 
 int curr_arr[9][7];
 
+int step = 0;
+int push = 0;
+int level = 1;
+
 int main() {
     memcpy(curr_arr, origin_arr1, sizeof(origin_arr1));
 
@@ -41,6 +46,7 @@ int main() {
 
     Pos curr = {2, 2, LEFT}; // y, x, Dir
     WINDOW *game_win;
+    WINDOW *info_win;
 
     initscr();
     keypad(stdscr, TRUE);
@@ -63,8 +69,16 @@ int main() {
 
     game_win = newwin(arr1_height, arr1_width*2, 3, 3);
     wbkgd(game_win, COLOR_PAIR(DEFAULT));
-
     refr_game(game_win, curr);
+
+    info_win = newwin(20, 15, 6, 26);
+    wbkgd(game_win, COLOR_PAIR(DEFAULT));
+    mvwprintw(info_win, 0, 0, "STEP : ");
+    mvwprintw(info_win, 1, 0, "PUSH : ");
+    mvwprintw(info_win, 2, 0, "LEVEL");
+    refr_info(info_win);
+
+    refresh();
 
     int chr = 0;
     Pos chk = curr;
@@ -154,4 +168,16 @@ void refr_game(WINDOW *w, Pos curr) {
 
     wrefresh(w);
     refresh();
+}
+
+void refr_info(WINDOW *w) {
+    char *c = new char;
+    sprintf(c, "%d", step);
+    mvwprintw(w, 0, 7, c);
+    sprintf(c, "%d", push);
+    mvwprintw(w, 1, 7, c);
+    sprintf(c, "%d", level);
+    mvwprintw(w, 2, 6, c);
+    delete c;
+    wrefresh(w);
 }
