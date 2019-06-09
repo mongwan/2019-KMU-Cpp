@@ -67,7 +67,7 @@ int main() {
     refresh();
 
     int chr = 0;
-    Pos chk = curr;
+    Pos chk;
     while (chr != 'q' && chr != 'Q') {
         chr = getch();
 
@@ -99,6 +99,7 @@ int main() {
                 curr.x = chk.x;
                 refr_game(game_win, curr);
                 step += 1;
+                push += 1;
                 refr_info(info_win);
             }
         }
