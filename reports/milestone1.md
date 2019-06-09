@@ -7,14 +7,14 @@ ncurses library를 사용한 Push Box Game 구현
 ## 작업 환경 설정
 ### CLion
 전부터 사용하던 Jetbrain의 CLion을 이번 프로젝트에서도 활용하기 위해 몇가지 설정이 필요했다. CLion 내장 터미널에서는 ncurses가 구동되지 않았기 때문에, 외부 콘솔 창을 여는 것을 설정해야 했다.
-![image1-1](image1-1.png)
+![image1-1](images/image1-1.png)
 
 현재 데스크탑 환경으로 KDE를 사용하기 때문에, 터미널은 내장되어있는 Konsole을 사용했다. 그림과 같이 설정함으로써 CLion에서 실행 버튼을 누르는 것 만으로 build를 한 뒤에 Konsole을 열어 현재 작성중인 코드를 실행할 수 있게 되었다.
 [이 링크의 글](https://stackoverflow.com/questions/36675012/how-to-execute-a-clion-program-in-gnome-terminal)을 참고하였다.
 
 ### CMakeLists
 CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeLists.txt를 수정하여 ncurses를 빌드 환경에 추가해주어야한다. 이는 단순히 빌드 옵션에 -lncurses를 추가하는 것으로 가능하다. [이 링크의 글](https://stackoverflow.com/questions/41017629/link-ncurses-in-clion-cmake)을 참고하였다.
-![image1-2](image1-2.png)
+![image1-2](images/image1-2.png)
 
 ## ncurses 기본 알아보기
 ### 창 띄우기
@@ -37,7 +37,7 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         return 0;
     }
 
-![image1-3](image1-3.png)
+![image1-3](images/image1-3.png)
 
 - 헤더파일은 ncurses.h를 불러온다.
 - initscr() -> initiate screen
@@ -75,7 +75,7 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         return 0;
     }
 
-![imaege1-4](image1-4.png)
+![imaege1-4](images/image1-4.png)
 
 - start_color()은 color 설정 전에 실행되어야 한다.
 - init_pair(n, font-color, background-color) : 글자 색상과 배경 색상 순으로 n번 색상 Pair을 정의한다. 
@@ -114,7 +114,7 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         return 0;
     }
 
-![image1-5](image1-5.png)
+![image1-5](images/image1-5.png)
 
 - keypad(*win, bool) : 키보드 특수 키 입력을 가능하게 설정해준다. 첫 인자로 윈도우 포인터를, 두번째 인자로 사용 가능, 불가능을 bool로 받는다.
 - curs_set(int visibility) 커서 설정, 0은 안보임, 1은 작은 커서, 2는 큰 커서이나 나의 환경에서는 1과 2의 차이가 없었다.
@@ -173,7 +173,7 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         curs_set(0);
         noecho();
 
-        int arr1[9][7] = {
+        int curr_arr[9][7] = {
                 {1, 1, 1, 1, 4, 4, 4},
                 {1, 3, 0, 1, 1, 4, 4},
                 {1, 3, 0, 0, 1, 4, 4},
@@ -207,7 +207,7 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         wbkgd(game_win, COLOR_PAIR(P_DEFAULT));
         for(int y=0; y < arr1_height; y++) {
             for(int x=0; x < arr1_width*2; x++) {
-                int n = arr1[y][x];
+                int n = curr_arr[y][x];
                 wattron(game_win, COLOR_PAIR(n+1));
                 char *c = new char;
                 sprintf(c, "%d", n);
@@ -227,6 +227,6 @@ CLion에서는 CMake를 이용해 프로그램을 빌드한다. 따라서 CMakeL
         return 0;
     }
 
-![image1-7](image1-7.png)
+![image1-7](images/image1-7.png)
 
-위 코드 실행 시 위와 같은 창이 표시된다. 색상을 설정하기 위해 여러가지 시도를 했지만 (init_color()를 통해 다른 색상을 지정하는 등) 현재 나의 터미널 환경에서는 변경이 반영되지 않아 색상 관련 코드는 최소화하였다. 열거체를 통해 COLOR_PAIR간의 구분이 더 잘 가도록 코드를 작성했고, 이중 for문을 통해 각 칸의 정보를 색으로 표현하였다.
+위 코드 실행 시 위와 같은 창이 표시된다. 색상을 설정하기 위해 여러가지 시도를 했지만 (init_color()를 통해 다른 색상을 지정하는 등) 현재 나의 터미널 환경에서는 변경이 반영되지 않아 색상 관련 코드는 최소화하였다. 열거형을 통해 COLOR_PAIR간의 구분이 더 잘 가도록 코드를 작성했고, 이중 for문을 통해 각 칸의 정보를 색으로 표현하였다. 각 칸은 문자 2개로 이루어져 있는데, 나의 터미널 환경의 글꼴이 세로로 긴 고정폭 글꼴이기 때문에 타일 모양을 구현하기 위해서 문자 두개로 한 칸을 표현하였다. 
