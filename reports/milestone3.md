@@ -209,3 +209,99 @@ ncurses library를 사용한 Push Box Game 구현
 
         // 이하 단순 변수 이름 변경
 
+### 최종 수정
+- 스테이지를 정수형 배열로 각각 선언했더니, 스테이지를 넘어가는 것을 구현하기 힘들었다. 일단은, 각 배열의 메모리 주소를 배열로 가지고 있는 int* 형 배열 stagep를 만들었다. 각 배열을 (int*)를 통해 명시적 형변환하여 넣었다. 이 때문에 main 코드에서 2차원적으로 값을 찾던 방식을 사용하지 못하고, [y * width + x] 로 index를 찾는 방식을 변경했다.
+
+#### in stages.h
+        int* stagep[STAGEN] = {(int*)stage1, (int*)stage2, (int*)stage3, (int*)stage4, (int*)stage5};
+#### in main.cpp
+        curr_status[i].push_back(stagep[level][i * widths[level]+j]);
+        // 등 모든 배열 참조 형식 변경
+
+
+- 각 색상이 어떤 타일을 뜻하는지 알려주는 정보창을 추가했다.
+
+        attron(COLOR_PAIR(P_BOX));
+        mvprintw(4, 26, "  ");
+        attroff(COLOR_PAIR(P_BOX));
+        mvprintw(4, 28, " is BOX");
+        attron(COLOR_PAIR(P_WALL));
+        mvprintw(5, 26, "  ");
+        attroff(COLOR_PAIR(P_WALL));
+        mvprintw(5, 28, " is WALL");
+        attron(COLOR_PAIR(P_GOAL));
+        mvprintw(6, 26, "  ");
+        attroff(COLOR_PAIR(P_GOAL));
+        mvprintw(6, 28, " is GOAL");
+        attron(COLOR_PAIR(P_CURR));
+        mvprintw(7, 26, "  ");
+        attroff(COLOR_PAIR(P_CURR));
+        mvprintw(7, 28, " is Character");
+
+- 현재 GOAL에 들어오지 못한 상자의 개수를 나타내는 정수형 변수를 만들어, 이 변수가 0일 때 다음 스테이지로 넘어가는 로직을 추가했다.
+
+        if (not_goaled_box <= 0) { // when stage clear
+            curr_status.clear();
+
+            wattron(game_win, COLOR_PAIR(P_OUTSIDE));
+            for(int y=0; y < heights[level]+1; y++) {
+                for (int x = 0; x < widths[level]+1; x++)
+                    mvprintw(y + 2, (x * 2) + 2, "    ");
+            }
+            wattroff(game_win, COLOR_PAIR(P_OUTSIDE));
+            refresh();
+
+            level += 1;
+            if (level >= STAGEN) {
+                cleared = true;
+                break;
+            }
+            step = 0;
+            push = 0;
+
+            game_win = newwin(heights[level], widths[level]*2, 3, 3);
+
+            for (int i = 0; i < heights[level]; i++) {
+                curr_status.push_back(std::vector<int>());
+                for (int j = 0; j < widths[level]; j++)
+                    curr_status[i].push_back(stagep[level][i * widths[level]+j]);
+            }
+
+            not_goaled_box = boxn[level];
+            curr.y = init_curr[level][0];
+            curr.x = init_curr[level][1];
+            curr.heading = LEFT; // y, x, Dir
+            refr_game(game_win, curr, curr_status);
+            refr_info(info_win);
+        }
+
+- R을 누르면, 현재 스테이지가 0으로 초기화되는 기능을 넣었다.
+
+        else if (chr == 'r' || chr == 'R') {
+            step = 0;
+            push = 0;
+            not_goaled_box = boxn[level];
+
+            curr_status.clear();
+            for (int i = 0; i < heights[level]; i++) {
+                curr_status.push_back(std::vector<int>());
+                for (int j = 0; j < widths[level]; j++)
+                    curr_status[i].push_back(stagep[level][i * widths[level]+j]);
+            }
+
+            curr.y = init_curr[level][0];
+            curr.x = init_curr[level][1];
+            curr.heading = LEFT; // y, x, Dir
+            refr_game(game_win, curr, curr_status);
+            refr_info(info_win);
+            continue;
+        }
+
+- 상자가 지나가면 GOAL이 DEFAULT로 변경되는 오류를 수정했다.
+        curr_status[chk.y][chk.x] = (stagep[level][chk.y*widths[level]+chk.x] == GOAL) ?
+            stagep[level][chk.y*widths[level]+chk.x]
+            : DEFAULT;
+
+
+- COLOR_GREEN이 적용되지 않는 것은 단순히 변수를 잘못 넣어 있던 오류였고, 수정했다.
+        wattron(w, COLOR_PAIR(P_CURR));
