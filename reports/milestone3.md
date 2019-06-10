@@ -192,3 +192,20 @@ ncurses library를 사용한 Push Box Game 구현
 - WINDOW* info_win을 만들어 기초적인 설정 후, step, push 변수를 적절한 상황에서만 증가시킨다.
 
 ### 2차 수정
+- 현재 상태 (curr_status)를 std::vector< std::vector<int> >, 즉 2차원 int형 벡터형으로 바꿨다. 이 변경을 통해 다양한 크기의 stage를 현재 상태로써 만들수 있다.
+- 1차 수정 이후로 바뀐 부분만 작성했다.
+
+        #include <vector> // vector 사용을 위해 추가
+        
+        void refr_game(WINDOW* w, Pos curr, std::vector< std::vector<int> > curr_status);
+        // 현재 상태 변수를 main()의 지역 변수로 만들기 위해 함수에 인자 추가
+
+        std::vector< std::vector<int> > curr_status;
+        for (int i = 0; i < arr1_height; i++) {
+            curr_status.push_back(std::vector<int>());
+            for (int j = 0; j < arr1_width; j++)
+                curr_status[i].push_back(stage1[i][j]);
+        } // memcpy 대신, for문으로 직접 복사. (std::copy를 쓰려 했으나, 사용하지 못했다)
+
+        // 이하 단순 변수 이름 변경
+

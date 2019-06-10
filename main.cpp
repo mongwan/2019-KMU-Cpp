@@ -1,6 +1,6 @@
 #include <ncurses.h>
 #include <clocale>
-#include <memory.h>
+#include <vector>
 #include "stages.h"
 
 enum Direction {LEFT, RIGHT, UP, DOWN};
@@ -10,23 +10,23 @@ enum Pair {P_DEFAULT = 1, P_WALL, P_BOX, P_GOAL, P_OUTSIDE, P_CURR};
 struct Pos { int y; int x; Direction heading; };
 
 Pos chk_pos(Direction dir, Pos curr);
-void refr_game(WINDOW* w, Pos curr);
+void refr_game(WINDOW* w, Pos curr, std::vector< std::vector<int> > curr_status);
 void refr_info(WINDOW* w);
 
-int heights[STAGEN] = {7, 9, 6, 7, 8};
-int widths[STAGEN] = {6, 7, 8, 7, 10};
-
-int arr1_height = 9;
-int arr1_width = 7;
-
-int curr_arr[9][7];
+int arr1_height = 7;
+int arr1_width = 6;
 
 int step = 0;
 int push = 0;
 int level = 1;
 bool cleared = false;
 int main() {
-    memcpy(curr_arr, stage2, sizeof(stage2));
+    std::vector< std::vector<int> > curr_status;
+    for (int i = 0; i < arr1_height; i++) {
+        curr_status.push_back(std::vector<int>());
+        for (int j = 0; j < arr1_width; j++)
+            curr_status[i].push_back(stage1[i][j]);
+    }
 
     setlocale(LC_ALL, ""); // to use unicode
 
@@ -55,7 +55,7 @@ int main() {
 
     game_win = newwin(arr1_height, arr1_width*2, 3, 3);
     wbkgd(game_win, COLOR_PAIR(DEFAULT));
-    refr_game(game_win, curr);
+    refr_game(game_win, curr, curr_status);
 
     info_win = newwin(20, 15, 6, 26);
     wbkgd(game_win, COLOR_PAIR(DEFAULT));
@@ -77,27 +77,27 @@ int main() {
         else if (chr == KEY_DOWN) chk = chk_pos(DOWN, curr);
         else continue;
 
-        int chk_num = curr_arr[chk.y][chk.x];
+        int chk_num = curr_status[chk.y][chk.x];
 
         if (chk_num == WALL) continue; // heading to wall
         else if (chk_num == DEFAULT || chk_num == GOAL) {
             curr.y = chk.y;
             curr.x = chk.x;
-            refr_game(game_win, curr);
+            refr_game(game_win, curr, curr_status);
             step += 1;
             refr_info(info_win);
         }
         else if (chk_num == BOX) {
             Pos alt_chk = chk_pos(chk.heading, chk);
-            int alt_chk_num = curr_arr[alt_chk.y][alt_chk.x];
+            int alt_chk_num = curr_status[alt_chk.y][alt_chk.x];
 
             if (alt_chk_num == WALL || alt_chk_num == BOX) continue;
             else if (alt_chk_num == DEFAULT || alt_chk_num == GOAL) {
-                curr_arr[alt_chk.y][alt_chk.x] = BOX;
-                curr_arr[chk.y][chk.x] = DEFAULT;
+                curr_status[alt_chk.y][alt_chk.x] = BOX;
+                curr_status[chk.y][chk.x] = DEFAULT;
                 curr.y = chk.y;
                 curr.x = chk.x;
-                refr_game(game_win, curr);
+                refr_game(game_win, curr, curr_status);
                 step += 1;
                 push += 1;
                 refr_info(info_win);
@@ -143,7 +143,7 @@ Pos chk_pos(Direction dir, Pos curr) {
     return chk;
 }
 
-void refr_game(WINDOW *w, Pos curr) {
+void refr_game(WINDOW *w, Pos curr, std::vector< std::vector<int> > curr_arr) {
     for(int y=0; y < arr1_height; y++) {
         for(int x=0; x < arr1_width*2; x++) {
             int n = curr_arr[y][x];

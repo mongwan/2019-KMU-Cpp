@@ -2,14 +2,18 @@
 #define PUSHBOX_STAGES_H
 
 const int STAGEN = 5;
+const int heights[STAGEN] = {7, 9, 6, 7, 8};
+const int widths[STAGEN] = {6, 7, 8, 7, 10};
+
 
 int stage1[7][6] = {
         {1, 1, 1, 1, 1, 4},
         {1, 0, 0, 0, 1, 4},
         {1, 3, 3, 3, 1, 4},
-        {1, 2, 2, 2, 0, 1},
+        {1, 2, 2, 2, 1, 1},
         {1, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 1}
+        {1, 0, 0, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1}
 };
 
 int stage2[9][7] = {
